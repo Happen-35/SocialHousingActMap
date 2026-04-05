@@ -697,44 +697,66 @@ const BASE_BADGE_B64 = MY_BASE64;
 const GAS_URL = "https://script.google.com/macros/s/AKfycbyz73iLJcl636Zis5nC8Bj3-LEgXbMmx6dX4DW-y7KlP4mASYE31pYW5lx6As4GR0Tccw/exec"; 
 
 async function fetchData() {
-  console.log("正在嘗試從 Google 抓取資料...");
+  const loader = document.getElementById("preloader-wrap");
+  
+  // 1. 【加速關鍵】先從手機記憶體抓舊資料
+  const cachedBases = localStorage.getItem("map_bases");
+  const cachedActs = localStorage.getItem("map_acts");
+
+  if (cachedBases && cachedActs) {
+    console.log("偵測到快取資料，先行渲染...");
+    allBases = JSON.parse(cachedBases);
+    globalActivities = JSON.parse(cachedActs);
+    
+    // 立即顯示地圖與列表 (0秒顯示)
+    buildBaseMap();
+    buildFastIndexes();
+    renderMarkers(allBases);
+    renderGlobalList(globalActivities.map((_, i) => i));
+    
+    // 隱藏讀取畫面
+    if (loader) loader.style.display = "none";
+    document.getElementById("selected-title").innerText = "請選擇社宅基地";
+  }
+
+  // 2. 【背景同步】悄悄跟 Google 要最新資料
   try {
-    // 同步抓取基地與活動
+    console.log("正在從背景更新最新資料...");
     const [basesRes, actRes] = await Promise.all([
       fetch(`${GAS_URL}?get=bases`).then(r => r.json()),
       fetch(`${GAS_URL}?get=activities`).then(r => r.json())
     ]);
 
-    // 1. 處理基地資料
+    // 更新最新資料到全域變數
     allBases = Array.isArray(basesRes) ? basesRes : [];
-    buildBaseMap();
-    console.log("基地載入成功:", allBases.length);
-
-    // 2. 處理活動資料
     globalActivities = (actRes && Array.isArray(actRes.data)) ? actRes.data : [];
-    activitiesLoaded = true;
-    buildFastIndexes();
-    console.log("活動載入成功:", globalActivities.length);
 
-    // 3. 隱藏載入動畫
-    const loader = document.getElementById("preloader-wrap");
-    if (loader) loader.style.display = "none";
-    
-    document.getElementById("selected-title").innerText = "請選擇社宅基地";
-    document.getElementById("activity-list").innerHTML = '<div style="text-align:center; color:#9CA3AF; padding:40px;">請點擊地圖上的座標標記</div>';
-    
-    // 4. 初始化列表與地圖標記
-    renderGlobalList(globalActivities.map((_, i) => i));
-    if (allBases.length > 0) {
+    // 3. 【存進記憶體】供下次開啟使用
+    localStorage.setItem("map_bases", JSON.stringify(allBases));
+    localStorage.setItem("map_acts", JSON.stringify(globalActivities));
+
+    // 如果是「第一次」使用（沒快取），這時才渲染並關閉動畫
+    if (!cachedBases) {
+      buildBaseMap();
+      buildFastIndexes();
       renderMarkers(allBases);
+      renderGlobalList(globalActivities.map((_, i) => i));
+      if (loader) loader.style.display = "none";
+      document.getElementById("selected-title").innerText = "請選擇社宅基地";
+      document.getElementById("activity-list").innerHTML = '<div style="text-align:center; color:#9CA3AF; padding:40px;">請點擊地圖上的座標標記</div>';
+    } else {
+      // 如果已經有快取了，我們偷偷更新背景索引就好，不打擾使用者操作
+      buildBaseMap();
+      buildFastIndexes();
     }
 
   } catch (e) {
-    console.error("資料載入失敗:", e);
-    // 發生錯誤時也關閉讀取動畫，並顯示錯誤訊息
-    const loader = document.getElementById("preloader-wrap");
-    if (loader) loader.style.display = "none";
-    alert("資料載入失敗，請檢查網路連接或 API 設定。");
+    console.error("背景資料更新失敗:", e);
+    // 如果連快取都沒有（初次使用），才跳警告
+    if (!cachedBases) {
+      if (loader) loader.style.display = "none";
+      alert("初次載入失敗，請確認網路連線。");
+    }
   }
 }
 
