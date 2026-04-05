@@ -687,19 +687,15 @@ const BASE_BADGE_B64 = MY_BASE64;
       }
     }
 
-    /* ------------------ Apps Script 並行載入 ------------------ */
-    function runGs(fnName, ...args) {
-      return new Promise((resolve, reject) => {
-        google.script.run
-          .withSuccessHandler(resolve)
-          .withFailureHandler(reject)[fnName](...args);
-      });
-    }
+/* ========================================================= 
+   【修正版】資料抓取邏輯：對接到 Google API 
+   ========================================================= */
 
-/* --- 新版資料抓取：對接到 Google API --- */
-const GAS_URL = "https://script.google.com/macros/s/AKfycbyz73iLJcl636Zis5nC8Bj3-LEgXbMmx6dX4DW-y7KlP4mASYE31pYW5lx6As4GR0Tccw/exec"; // ← 貼上剛才複製的網址
+// ⚠️ 請確保這串網址最後面是 /exec
+const GAS_URL = "https://script.google.com/macros/s/AKfycbyz73iLJcl636Zis5nC8Bj3-LEgXbMmx6dX4DW-y7KlP4mASYE31pYW5lx6As4GR0Tccw/exec"; 
 
 async function fetchData() {
+  console.log("正在嘗試從 Google 抓取資料...");
   try {
     // 同步抓取基地與活動
     const [basesRes, actRes] = await Promise.all([
@@ -707,31 +703,40 @@ async function fetchData() {
       fetch(`${GAS_URL}?get=activities`).then(r => r.json())
     ]);
 
-    // 處理基地
+    // 1. 處理基地資料
     allBases = Array.isArray(basesRes) ? basesRes : [];
     buildBaseMap();
+    console.log("基地載入成功:", allBases.length);
 
-    // 處理活動
-    globalActivities = Array.isArray(actRes.data) ? actRes.data : [];
+    // 2. 處理活動資料
+    globalActivities = (actRes && Array.isArray(actRes.data)) ? actRes.data : [];
     activitiesLoaded = true;
     buildFastIndexes();
+    console.log("活動載入成功:", globalActivities.length);
 
-    // 隱藏載入動畫
-    document.getElementById("preloader-wrap").style.display = "none";
+    // 3. 隱藏載入動畫
+    const loader = document.getElementById("preloader-wrap");
+    if (loader) loader.style.display = "none";
+    
     document.getElementById("selected-title").innerText = "請選擇社宅基地";
     document.getElementById("activity-list").innerHTML = '<div style="text-align:center; color:#9CA3AF; padding:40px;">請點擊地圖上的座標標記</div>';
     
-    // 初始化列表與地圖標記
+    // 4. 初始化列表與地圖標記
     renderGlobalList(globalActivities.map((_, i) => i));
-    if (allBases.length > 0) renderMarkers(allBases);
+    if (allBases.length > 0) {
+      renderMarkers(allBases);
+    }
 
   } catch (e) {
-    console.error("載入失敗:", e);
-    alert("資料載入失敗，請稍後再試");
+    console.error("資料載入失敗:", e);
+    // 發生錯誤時也關閉讀取動畫，並顯示錯誤訊息
+    const loader = document.getElementById("preloader-wrap");
+    if (loader) loader.style.display = "none";
+    alert("資料載入失敗，請檢查網路連接或 API 設定。");
   }
 }
 
-// 執行載入
+// 正式執行抓取
 fetchData();
 
     /* ------------------ 第一分頁：地圖標記 ------------------ */
