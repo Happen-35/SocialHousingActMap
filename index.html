@@ -148,14 +148,14 @@
     }
 
     .card-title {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 700;
       margin-bottom: 6px;
       color: #111827;
     }
 
     .card-meta {
-      font-size: 0.85rem;
+      font-size: 0.96rem;
       color: #6B7280;
       display: flex;
       align-items: center;
@@ -792,8 +792,8 @@ fetchData();
         const { lat, lng } = parseLatLng(b);
         if (Number.isFinite(lat) && Number.isFinite(lng)) {
           const hasActivity = globalActivities.some(a => normalize(a["活動辦理基地"]) === normalize(baseName));
-          const normalIcon = L.divIcon({ html: pinHtml(32, 32, "#65502d", hasActivity), iconSize: [32, 32], iconAnchor: [16, 32], popupAnchor: [0, -32] });
-          const selectedIcon = L.divIcon({ html: pinHtml(42, 42, "#e2715d", false), iconSize: [42, 42], iconAnchor: [21, 42], popupAnchor: [0, -42] });
+          const normalIcon = L.divIcon({ html: pinHtml(32, 32, "#65502d", hasActivity), iconSize: [36, 36], iconAnchor: [16, 32], popupAnchor: [0, -32] });
+          const selectedIcon = L.divIcon({ html: pinHtml(42, 42, "#e2715d", false), iconSize: [48, 48], iconAnchor: [21, 42], popupAnchor: [0, -42] });
           const m = L.marker([lat, lng], { icon: normalIcon }).addTo(markerGroup);
           m.myNormalIcon = normalIcon;
           const gpsUrl = (b["Google map 連結"] || "").toString() || buildGoogleMapsUrl(lat, lng, address);
