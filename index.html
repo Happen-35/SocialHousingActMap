@@ -28,7 +28,7 @@
       background: #F9FAFB;
       color: #1F2937;
       overflow: hidden;
-      height: 100vh;
+      height: 100dvh;
       display: flex;
       flex-direction: column;
     }
@@ -320,6 +320,10 @@
       justify-content: space-around;
       align-items: center;
       flex-shrink: 0;
+  /* 修正：增加底部安全區域間距，避免被手機橫條擋住 */
+      padding-bottom: env(safe-area-inset-bottom);
+      box-sizing: content-box; 
+      z-index: 1000; /* 確保在最上層 */
     }
 
     .nav-item {
