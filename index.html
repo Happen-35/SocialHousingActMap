@@ -392,6 +392,47 @@
     #det-base-info a.gps-link {
       color: #65502d;
     }
+
+    /* 🚀 新增：第三分頁 時髦方格佈局專用 CSS */
+    .tiles-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-top: 25px;
+    }
+    .tile-item {
+      background-color: #ffffff;
+      border: 2px solid #E5E7EB;
+      border-radius: 12px;
+      padding: 20px;
+      text-decoration: none;
+      color: #1F2937;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      transition: transform 0.15s, box-shadow 0.15s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .tile-item:active { transform: scale(0.97); }
+    .tile-large {
+      grid-column: span 2;
+      border: 2px solid #dca35c; /* 地圖專屬古銅金 */
+      padding: 35px 20px;
+    }
+    .tile-large .tile-img {
+      height: 60px; width: auto; max-width: 80%; margin-bottom: 12px; object-fit: contain;
+    }
+    .tile-large .tile-title { font-size: 1.15rem; font-weight: 700; color: #dca35c; }
+    .tile-large .tile-desc { font-size: 0.8rem; color: #9CA3AF; margin-top: 6px; }
+    .tile-small { background-color: #ffffff; border: 2px solid #E5E7EB; }
+    .tile-small .tile-img {
+      height: 55px; width: auto; max-width: 85%; margin-bottom: 10px; object-fit: contain;
+    }
+    .tile-small .tile-title { font-size: 0.95rem; font-weight: 700; }
+    .tile-small .tile-desc { font-size: 0.75rem; color: #9CA3AF; margin-top: 4px; }
+    
   </style>
 </head>
 
@@ -446,6 +487,40 @@
     </div>
   </div>
 
+  <div id="page-links" class="page">
+    <div class="search-header">
+      <h2 style="font-size:1.3rem; margin:0; font-weight:800; color:#111827;">相關連結指南</h2>
+    </div>
+    <div id="links-list-container" style="overflow-y: auto; flex: 1; padding: 10px 24px 30px; box-sizing: border-box;">
+      
+      <div class="tiles-grid">
+          <a href="https://你的帳號.github.io/你的集點系統專案名/" target="_blank" class="tile-item tile-large">
+              <img src="./icon-map.png" alt="集點系統" class="tile-img">
+              <span class="tile-title">生活學校集點系統</span>
+              <span class="tile-desc">點我前往參加完課累積點數與住戶驗證</span>
+          </a>
+
+          <a href="https://lin.ee/hdGFtKA" target="_blank" class="tile-item tile-small">
+              <img src="./icon-line-school.png" alt="生活學校" class="tile-img">
+              <span class="tile-title">生活學校 LINE</span>
+              <span class="tile-desc">一起創造理想生活吧！</span>
+          </a>
+
+          <a href="https://lin.ee/xpyLf08" target="_blank" class="tile-item tile-small">
+              <img src="./icon-line-club.png" alt="社團計畫" class="tile-img">
+              <span class="tile-title">社團計畫 LINE</span>
+              <span class="tile-desc">一群人一起做一件事。</span>
+          </a>
+      </div>
+
+      <div class="info-footer">
+        <div>© 臺中市住宅發展工程處</div>
+        <div>好伴社計</div>
+        <div>聯絡方式：(04)2223-1312</div>
+      </div>
+    </div>
+  </div>
+  
   <nav id="bottom-nav">
     <div class="nav-item active" id="nav-map" onclick="switchTab('map')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -463,6 +538,15 @@
       </svg>
       <span>所有活動</span>
     </div>
+
+    <div class="nav-item" id="nav-links" onclick="switchTab('links')">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+        <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+      </svg>
+      <span>相關連結</span>
+    </div>
+    
   </nav>
 
   <div id="detail-overlay">
@@ -653,10 +737,11 @@ const BASE_BADGE_B64 = MY_BASE64;
         searchHay[i] = ((a["活動名稱"] || "") + " " + (a["活動辦理基地"] || "")).toLowerCase();
       }
     }
-
-    /* ------------------ History ------------------ */
+/* ------------------ History (🚀 已同步支援第三分頁的歷史紀錄) ------------------ */
     function getActiveTab() {
-      return $("page-all").classList.contains("active") ? "all" : "map";
+      if ($("page-all").classList.contains("active")) return "all";
+      if ($("page-links").classList.contains("active")) return "links"; // 🚀 新增 links 判斷
+      return "map";
     }
 
     history.replaceState({ view: "root", tab: "map" }, document.title, location.pathname + location.search);
@@ -668,12 +753,12 @@ const BASE_BADGE_B64 = MY_BASE64;
         return;
       }
       elOverlay.style.display = "none";
-      if (st.tab === "all" || st.tab === "map") {
+      if (st.tab === "all" || st.tab === "map" || st.tab === "links") { // 🚀 新增支援 links
         switchTab(st.tab, true);
       }
     });
 
-    /* ------------------ 分頁切換 ------------------ */
+    /* ------------------ 分頁切換 (🚀 已完美升級支援三分頁邏輯) ------------------ */
     function switchTab(tabId, silent) {
       if (elOverlay && elOverlay.style.display === "flex") {
         elOverlay.style.display = "none";
@@ -681,16 +766,21 @@ const BASE_BADGE_B64 = MY_BASE64;
           history.replaceState({ view: "root", tab: getActiveTab() }, document.title, location.pathname + location.search);
         }
       }
-      document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
-      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+      document.querySelectorAll(".page").forEach(p => p.classList.remove('active'));
+      document.querySelectorAll(".nav-item").forEach(n => n.classList.remove('active'));
+      
       if (tabId === "map") {
         $("page-map").classList.add("active");
         $("nav-map").classList.add("active");
         setTimeout(() => map.invalidateSize(), 100);
-      } else {
+      } else if (tabId === "all") {
         $("page-all").classList.add("active");
         $("nav-all").classList.add("active");
+      } else if (tabId === "links") { // 🚀 新增第三個分頁開關
+        $("page-links").classList.add("active");
+        $("nav-links").classList.add("active");
       }
+      
       if (!silent) {
         history.pushState({ view: "root", tab: tabId }, document.title, location.pathname + location.search);
       }
