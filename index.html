@@ -705,9 +705,13 @@ const BASE_BADGE_B64 = MY_BASE64;
     elLoaderImg.src = MY_BASE64 || "";
 
     const map = L.map("map", { zoomControl: false });
+    // 1. 淺灰底圖
     L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
-      maxZoom: 16,
-      attribution: 'Tiles &copy; Esri'
+      maxZoom: 16
+    }).addTo(map);
+    // 2. 疊加地名與道路標籤
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}", {
+      maxZoom: 16
     }).addTo(map);
 
     let allBases = [];
