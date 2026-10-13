@@ -14,6 +14,11 @@
       --nav-h: 60px;
     }
 
+    /* 🚀 將彩色 OSM 圖磚轉化為極簡淡灰風格 */
+    .map-tiles-light {
+      filter: grayscale(85%) contrast(90%) brightness(104%);
+    }
+    
     .info-footer {
       margin-top: 84px;
       padding-bottom: 30px;
@@ -706,12 +711,11 @@ const BASE_BADGE_B64 = MY_BASE64;
 
     const map = L.map("map", { zoomControl: false });
     // 1. 淺灰底圖
-    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}", {
-      maxZoom: 16
-    }).addTo(map);
-    // 2. 疊加地名與道路標籤
-    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}", {
-      maxZoom: 16
+    // 🚀 使用 OSM 高細緻度圖資，最高可放大至 19 級
+    L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      className: 'map-tiles-light', // 指定自訂 class 套用濾鏡
+      attribution: '&copy; OpenStreetMap'
     }).addTo(map);
 
     let allBases = [];
